@@ -19,6 +19,6 @@ Project **Rizzotto** transforms the famous cubic Otto DIY robot into an insect-i
 ---
 
 ## 🛠️ Hardware Requirements
-* **Servos:** 8x Micro Servos (e.g., SG90 or MG90S).
+* **Servos:** 8x Micro Servos SG90.
 * **Controller:** Arduino Nano / ESP32 or compatible board.
 * **Print Settings:** PLA/PETG, 20% infill, no supports needed for most parts.
