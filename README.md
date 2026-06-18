@@ -14,6 +14,7 @@ Project **Rizzotto** transforms the famous cubic Otto DIY robot into an insect-i
 ## 📂 Repository Contents
 * [Printables](./Printables) - Hosts all the printable needed parts
 * [Code](./Code) - Hosts the code needed for the movement
+* [Electronic components](./Electronic components) - Hosts the electronics used
 * [README.md](./README.md) - Project documentation
 
 ---
