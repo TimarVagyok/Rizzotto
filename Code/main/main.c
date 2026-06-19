@@ -9,20 +9,26 @@
 // Pull in the RizzOtto poses header
 #include "rizzotto_poses.h"
 
+// ===== BRING-UP MODE =====
+// 0 = stand & hold            (check/fit the neutral pose, power, wiring)
+// 1 = per-leg direction test  (verify the signs in HIP_FWD[] / KNEE_UP[])
+// 2 = run the routine         (walk 1 m -> rotate -> sit, repeat)
+#define MODE 2
+
 // ===== INSTANTIATE ENGINE GLOBALS =====
 int frameDelay = 200;                // Default delay between frames (ms)
 int walkCycles = 4;                 // Number of repetitions for walking actions
 char currentCommand[32] = "";       // Tracks active state machine directive
 
 // ===== HARDWARE PIN CONFIGURATION =====
-#define PIN_R1   21   // Right Hip 1  (Horizontal)
+#define PIN_R1   15   // Right Hip 1  (Horizontal)
 #define PIN_R2   22   // Right Hip 2  (Horizontal)
 #define PIN_L1   17   // Left Hip 1   (Horizontal)
 #define PIN_L2   16   // Left Hip 2   (Horizontal)
 #define PIN_R4   26   // Right Vert 4 (Vertical - Pair with R2)
 #define PIN_R3   27   // Right Vert 3 (Vertical - Pair with R1)
 #define PIN_L3   32   // Left Vert 3  (Vertical - Pair with L1)
-#define PIN_L4   33   // Left Vert 4  (Vertical - Pair with L2)
+#define PIN_L4   21   // Left Vert 4  (Vertical - Pair with L2)
 
 // ===== PWM CONFIGURATION =====
 #define SERVO_MIN_PULSE_US     500   
@@ -30,7 +36,7 @@ char currentCommand[32] = "";       // Tracks active state machine directive
 #define SERVO_MAX_DEGREE       180   
 #define PWM_FREQ_HZ            50    
 #define PWM_RES_BITS           LEDC_TIMER_14_BIT 
-#define PWM_MAX_DUTY           ((1 << 14) - 1)   
+#define PWM_MAX_DUTY           ((1 << 14) - 1) 
 
 // Array lookup to map the Pose indices (0-7) to physical hardware pins
 const int SERVO_PINS[8] = {
@@ -108,19 +114,26 @@ void app_main(void)
 
     ESP_LOGI("main", "8-Servo LEDC Driver initialized for RizzOtto successfully.");
 
-    // ===== RIZZOTTO DEMO ANIMATION LOOP =====
+    // Start from the calibrated stand so the very first move is clean.
+    // (At boot the channels sit at 90, which is NOT this robot's stand.)
+    standAndSettle();
+
+    // ===== RIZZOTTO MAIN LOOP =====
     while (1) {
-        runStandPose(1);
-        vTaskDelay(pdMS_TO_TICKS(3000));
-
-        runWavePose();
-        vTaskDelay(pdMS_TO_TICKS(3000));
-
-        strcpy(currentCommand, "forward");
-        runWalkPose();
-        vTaskDelay(pdMS_TO_TICKS(3000));
-        
-        runRestPose();
-        vTaskDelay(pdMS_TO_TICKS(4000));
+#if   MODE == 0
+        standAndSettle();
+        vTaskDelay(pdMS_TO_TICKS(500));
+#elif MODE == 1
+        for (int leg = 0; leg < 4; leg++) testLeg(leg);
+        ESP_LOGI("main", "=== direction test pass done ===");
+        vTaskDelay(pdMS_TO_TICKS(1500));
+#else
+        // ---- THE ROUTINE: each call lives in rizzotto_poses.h ----
+        walkForwardMeters(1.0f);   // 1) walk 1 metre, fast
+        rotateInPlace(+1);         // 2) rotate in place
+        sitDown();                 // 3) sit and hold
+        frontPawWave();            // 4) back flat, see-saw front legs 5x
+        // loop repeats -> walks again
+#endif
     }
 }

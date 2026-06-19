@@ -3,5 +3,5 @@
   "idf.extensionActivationMode": "always",
   "idf.currentSetup": "C:\\esp\\v6.0.1\\esp-idf",
   "idf.flashType": "UART",
-  "idf.portWin": "COM4"
+  "idf.portWin": "COM7"
 }
