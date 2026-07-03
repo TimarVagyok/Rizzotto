@@ -79,13 +79,13 @@ static inline void runStandPose() {
     printf("RIZZOTTO POSING: STAND\n"); 
  
     set_servo_angle(R1, 90); 
-    set_servo_angle(R2, 45); 
-    set_servo_angle(L1, 110); 
-    set_servo_angle(L2, 90); 
+    set_servo_angle(R2, 90); 
+    set_servo_angle(L1, 90); 
+    set_servo_angle(L2, 45); 
     set_servo_angle(R4, 0); 
-    set_servo_angle(R3, 135); 
-    set_servo_angle(L3, 0); 
-    set_servo_angle(L4, 90);
+    set_servo_angle(R3, 140); 
+    set_servo_angle(L3, 20); 
+    set_servo_angle(L4, 100);
 }
 
 // =============================================================
@@ -126,9 +126,13 @@ static const int KNEE_IDX[4] = { L3, L4, R3, R4 };
 static const int HIP_STAND[4]  = { 110, 90, 90, 45 };   // L1 L2 R1 R2
 static const int KNEE_STAND[4] = {   0, 90, 135, 0 };   // L3 L4 R3 R4
 
-// Sign so +swing moves the foot toward the FRONT of the robot.
-//   >>> VERIFY each with MODE 1 (testLeg); flip a sign (+1<->-1) if wrong. <<<
-static const int HIP_FWD[4]  = { -1, -1, +1, +1 };   // FL FR BL BR
+// HIP SWING SIGNS — two patterns, because this robot's four hips all pivot
+// the SAME rotational sense:
+//   STRAIGHT walk  -> front legs OPPOSITE back legs  => body translates
+//   ROTATE in place-> all four the SAME              => body spins on the spot
+// (Empirically {+1,+1,+1,+1} spun; flipping the FRONT pair gives straight.)
+static const int HIP_FWD[4]  = { -1, -1, +1, +1 };   // FL FR BL BR  (STRAIGHT walk)
+static const int HIP_ROT[4]  = { +1, +1, +1, +1 };   // FL FR BL BR  (ROTATE in place)
 
 // Sign so +lift raises the foot OFF the ground (from runLegsExtremeUpPose data).
 static const int KNEE_UP[4]  = { +1, -1, -1, +1 };   // FL FR BL BR
@@ -140,8 +144,8 @@ static const int DIAG[2][2] = { { LEG_FL, LEG_BR }, { LEG_FR, LEG_BL } };
 // ---- SPEED / SIZE TUNABLES ----
 static int HIP_SWING = 26;   // stride length (deg from stand). Bigger = longer steps.
 static int KNEE_LIFT = 36;   // foot clearance (deg). Just enough to not drag.
-static int SWING_MS  = 150;  // time for the swing+stroke move.  SMALLER = FASTER.
-static int LIFT_MS   = 60;   // time to lift / plant a foot.      SMALLER = FASTER.
+static int SWING_MS  = 110;  // time for the swing+stroke move.  SMALLER = FASTER.
+static int LIFT_MS   = 45;   // time to lift / plant a foot.      SMALLER = FASTER.
 
 // Which side each leg is on (used only for turning).  -1 = left, +1 = right.
 // If rotateInPlace() turns the WRONG way, flip the dir argument in main.
@@ -156,7 +160,11 @@ static float gCur[8];     // current commanded angle of every servo (0..7)
 static float gSwing[4];   // per-leg hip:  -1 back .. 0 stand .. +1 forward
 static float gLift[4];    // per-leg knee:  0 planted .. 1 lifted
 
-static inline float hipTarget(int leg)  { return HIP_STAND[leg]  + HIP_FWD[leg] * gSwing[leg] * HIP_SWING; }
+// The gait reads hip signs through this pointer: HIP_FWD to walk straight,
+// HIP_ROT to spin in place. Each routine sets it before it runs.
+static const int *gHipSign = HIP_FWD;
+
+static inline float hipTarget(int leg)  { return HIP_STAND[leg]  + gHipSign[leg] * gSwing[leg] * HIP_SWING; }
 static inline float kneeTarget(int leg) { return KNEE_STAND[leg] + KNEE_UP[leg] * gLift[leg]  * KNEE_LIFT; }
 
 // Smoothly drive ALL 8 servos from their current angles to the targets
@@ -260,14 +268,14 @@ static inline void turnHalfStep(int g, int dir) {
 static inline void testLeg(int leg) {
     printf("\n--- LEG %d  (hip servo %d, knee servo %d) ---\n", leg, HIP_IDX[leg], KNEE_IDX[leg]);
     printf("hip FORWARD (foot should move toward FRONT)\n");
-    gSwing[leg] = +1; applyTargets(500); vTaskDelay(pdMS_TO_TICKS(700));
+    gSwing[leg] = +1; applyTargets(150); vTaskDelay(pdMS_TO_TICKS(220));
     printf("hip BACK\n");
-    gSwing[leg] = -1; applyTargets(700); vTaskDelay(pdMS_TO_TICKS(700));
-    gSwing[leg] = 0;  applyTargets(400);
+    gSwing[leg] = -1; applyTargets(180); vTaskDelay(pdMS_TO_TICKS(220));
+    gSwing[leg] = 0;  applyTargets(150);
     printf("knee UP (foot should LIFT off the ground)\n");
-    gLift[leg] = 1;   applyTargets(500); vTaskDelay(pdMS_TO_TICKS(700));
+    gLift[leg] = 1;   applyTargets(150); vTaskDelay(pdMS_TO_TICKS(220));
     printf("knee DOWN\n");
-    gLift[leg] = 0;   applyTargets(500); vTaskDelay(pdMS_TO_TICKS(900));
+    gLift[leg] = 0;   applyTargets(150); vTaskDelay(pdMS_TO_TICKS(260));
 }
 
 // One full forward stride = both diagonal pairs take a turn. Call this in a
@@ -284,16 +292,21 @@ void walkForwardOneStep(void) {
 // Walk forward ~`meters` metres as a fast continuous trot, then square up.
 // Distance comes from CYCLES_PER_METER -- calibrate that once on the floor.
 void walkForwardMeters(float meters) {
+    gHipSign = HIP_FWD;                                // straight-walk hip signs
     standAndSettle();                                  // stand up / start clean
     int cycles = (int)(meters * CYCLES_PER_METER + 0.5f);
     for (int i = 0; i < cycles; i++) walkForwardOneStep();
     standAndSettle();                                  // stop squared up
 }
 
-// Rotate in place (dir = +1 one way, -1 the other), then square up.
+// Rotate in place: the SAME trot, but with the all-same hip signs so the body
+// spins on the spot instead of translating. Then square up for the next walk.
 void rotateInPlace(int dir) {
+    (void)dir;                                         // one direction for now
+    gHipSign = HIP_ROT;                                // all-same signs -> spin
     standAndSettle();
-    for (int i = 0; i < TURN_CYCLES; i++) turnHalfStep(i & 1, dir);
+    for (int i = 0; i < TURN_CYCLES; i++) trotHalfStep(i & 1);
+    gHipSign = HIP_FWD;                                // restore for walking
     standAndSettle();
 }
 

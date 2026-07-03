@@ -21,14 +21,14 @@ int walkCycles = 4;                 // Number of repetitions for walking actions
 char currentCommand[32] = "";       // Tracks active state machine directive
 
 // ===== HARDWARE PIN CONFIGURATION =====
-#define PIN_R1   15   // Right Hip 1  (Horizontal)
+#define PIN_R1   17   // Right Hip 1  (Horizontal)
 #define PIN_R2   22   // Right Hip 2  (Horizontal)
-#define PIN_L1   17   // Left Hip 1   (Horizontal)
+#define PIN_L1   32   // Left Hip 1   (Horizontal)
 #define PIN_L2   16   // Left Hip 2   (Horizontal)
-#define PIN_R4   26   // Right Vert 4 (Vertical - Pair with R2)
-#define PIN_R3   27   // Right Vert 3 (Vertical - Pair with R1)
-#define PIN_L3   32   // Left Vert 3  (Vertical - Pair with L1)
-#define PIN_L4   21   // Left Vert 4  (Vertical - Pair with L2)
+#define PIN_R4   21   // Right Vert 4 (Vertical - Pair with R2)
+#define PIN_R3   15   // Right Vert 3 (Vertical - Pair with R1)
+#define PIN_L3   27   // Left Vert 3  (Vertical - Pair with L1)
+#define PIN_L4   26   // Left Vert 4  (Vertical - Pair with L2)
 
 // ===== PWM CONFIGURATION =====
 #define SERVO_MIN_PULSE_US     500   
@@ -116,24 +116,25 @@ void app_main(void)
 
     // Start from the calibrated stand so the very first move is clean.
     // (At boot the channels sit at 90, which is NOT this robot's stand.)
-    standAndSettle();
+    //standAndSettle();
 
     // ===== RIZZOTTO MAIN LOOP =====
     while (1) {
 #if   MODE == 0
-        standAndSettle();
+        //standAndSettle();
+        runStandPose();
         vTaskDelay(pdMS_TO_TICKS(500));
 #elif MODE == 1
+        standAndSettle();                 // known pose first, so each move is clear on video
         for (int leg = 0; leg < 4; leg++) testLeg(leg);
         ESP_LOGI("main", "=== direction test pass done ===");
         vTaskDelay(pdMS_TO_TICKS(1500));
 #else
-        // ---- THE ROUTINE: each call lives in rizzotto_poses.h ----
-        walkForwardMeters(1.0f);   // 1) walk 1 metre, fast
-        rotateInPlace(+1);         // 2) rotate in place
-        sitDown();                 // 3) sit and hold
-        frontPawWave();            // 4) back flat, see-saw front legs 5x
-        // loop repeats -> walks again
+        // ---- walk straight, then rotate, repeat ----
+        walkForwardMeters(1.0f);   // go straight ~1 m
+        rotateInPlace(+1);         // spin in place
+        // sitDown();           // (parked)
+        // frontPawWave();      // (parked)
 #endif
     }
 }

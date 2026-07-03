@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root{
+    --c1:#b95880; --c2:#e97058; --c3:#ca6071; --c4:#da6864;
+    --ink:#3a2a31; --soft:#7a6068; --bg:#fbf7f8; --line:#ead9de;
+  }
+  html,body{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{ font-family:'Montserrat',sans-serif; color:var(--ink); background:#fff; }
+  .page{ width:1280px; height:720px; background:var(--bg); padding:24px 26px; display:flex; flex-direction:column; }
+
+  /* ---------- header ---------- */
+  .head{ height:66px; border-radius:14px; padding:0 22px;
+    background:linear-gradient(90deg,var(--c1),var(--c3) 45%,var(--c4) 72%,var(--c2));
+    color:#fff; display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 4px 14px rgba(185,88,128,.28); }
+  .head h1{ font-size:25px; font-weight:800; letter-spacing:.3px; }
+  .head h1 span{ font-weight:500; opacity:.92; }
+  .head .sub{ font-size:11px; font-weight:500; opacity:.95; text-align:right; line-height:1.45; }
+
+  /* ---------- pipeline ---------- */
+  .flow{ flex:1; display:flex; align-items:stretch; gap:0; margin-top:15px; }
+  .col{ flex:1; display:flex; flex-direction:column; border-radius:12px;
+    background:#fff; border:1px solid var(--line); box-shadow:0 2px 8px rgba(120,80,95,.07);
+    overflow:hidden; }
+  .col .ch{ color:#fff; font-weight:800; font-size:11.5px; letter-spacing:.4px;
+    padding:9px 11px 8px; display:flex; align-items:center; gap:7px; }
+  .col .ch small{ font-weight:600; font-size:8.5px; opacity:.9; letter-spacing:.2px; }
+  .num{ background:rgba(255,255,255,.28); width:17px; height:17px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; }
+  .body{ padding:9px 9px 10px; display:flex; flex-direction:column; gap:7px; flex:1; }
+  .box{ border:1px solid var(--line); border-left:3px solid var(--bd,#ccc);
+    border-radius:7px; padding:6px 8px; background:#fffdfd; }
+  .box b{ display:block; font-size:9.6px; font-weight:700; line-height:1.2; }
+  .box span{ display:block; font-size:8.4px; font-weight:500; color:var(--soft); line-height:1.3; margin-top:2px; }
+  .mono{ font-family:'Montserrat',sans-serif; }
+
+  .arrow{ width:26px; display:flex; align-items:center; justify-content:center; flex:0 0 26px; }
+  .arrow:after{ content:''; width:0; height:0; border-top:8px solid transparent;
+    border-bottom:8px solid transparent; border-left:11px solid var(--c3); }
+
+  /* color themes per column */
+  .t1 .ch{background:var(--c1)} .t1 .box{--bd:var(--c1)}
+  .t2 .ch{background:var(--c4)} .t2 .box{--bd:var(--c4)}
+  .t3 .ch{background:var(--c3)} .t3 .box{--bd:var(--c3)}
+  .t4 .ch{background:var(--c2)} .t4 .box{--bd:var(--c2)}
+  .t5 .ch{background:var(--c1)} .t5 .box{--bd:var(--c1)}
+  .t6 .ch{background:var(--c4)} .t6 .box{--bd:var(--c4)}
+
+  /* ---------- calibration strip ---------- */
+  .calib{ height:132px; margin-top:14px; border-radius:12px; background:#fff;
+    border:1px solid var(--line); box-shadow:0 2px 8px rgba(120,80,95,.07); display:flex; }
+  .calib .lab{ width:150px; background:linear-gradient(160deg,var(--c2),var(--c4));
+    color:#fff; border-radius:12px 0 0 12px; padding:14px 14px; display:flex; flex-direction:column; justify-content:center; }
+  .calib .lab b{ font-size:13px; font-weight:800; line-height:1.18; }
+  .calib .lab span{ font-size:8.6px; font-weight:500; opacity:.95; margin-top:6px; line-height:1.35; }
+  .calib .grid{ flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:0 16px; padding:11px 16px; align-content:center; }
+  .cell{ border-left:3px solid var(--c3); padding:2px 0 2px 9px; }
+  .cell b{ font-size:9.4px; font-weight:700; }
+  .cell span{ display:block; font-size:8.3px; font-weight:500; color:var(--soft); line-height:1.32; margin-top:1px; }
+  .cell.k1{border-color:var(--c1)} .cell.k2{border-color:var(--c4)} .cell.k3{border-color:var(--c3)}
+  .cell.k4{border-color:var(--c2)} .cell.k5{border-color:var(--c1)} .cell.k6{border-color:var(--c4)}
+
+  .ft{ position:absolute; }
+  .feed{ display:flex; align-items:center; gap:6px; font-size:8.2px; font-weight:700; color:var(--c1); margin-top:7px; }
+  .feed .up{ width:0;height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-bottom:8px solid var(--c1); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="head">
+    <h1>RizzOtto&nbsp;&nbsp;<span>· Quadruped Walking Firmware — Architecture</span></h1>
+    <div class="sub">ESP32 · ESP-IDF (C) · 8× micro-servos (4 legs × hip+knee)<br>
+      Pipeline: boot → mode → routine → gait → kinematics → PWM → servos</div>
+  </div>
+
+  <div class="flow">
+
+    <!-- 1 BOOT -->
+    <div class="col t1">
+      <div class="ch"><span class="num">1</span> BOOT &amp; INIT <small>main.c · app_main()</small></div>
+      <div class="body">
+        <div class="box"><b>ESP32 reset → app_main()</b></div>
+        <div class="box"><b>ledc_timer_config()</b><span>50 Hz · 14-bit · TIMER_0 · high-speed</span></div>
+        <div class="box"><b>8× ledc_channel_config()</b><span>GPIO ↔ CH0–CH7, all init to 90°</span></div>
+        <div class="box"><b>enter while(1) main loop</b></div>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- 2 MODE -->
+    <div class="col t2">
+      <div class="ch"><span class="num">2</span> MAIN LOOP <small>#define MODE</small></div>
+      <div class="body">
+        <div class="box"><b>while(1) — compile-time MODE</b><span>one firmware, switch behaviour</span></div>
+        <div class="box"><b>MODE 0 · runStandPose()</b><span>hold calibrated stand</span></div>
+        <div class="box"><b>MODE 1 · testLeg(0..3)</b><span>per-leg direction bring-up</span></div>
+        <div class="box"><b>MODE 2 · routine</b><span>walk → rotate, repeat</span></div>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- 3 ROUTINES -->
+    <div class="col t3">
+      <div class="ch"><span class="num">3</span> ROUTINES <small>rizzotto_poses.h</small></div>
+      <div class="body">
+        <div class="box"><b>walkForwardMeters(m)</b><span>gHipSign = HIP_FWD → straight</span></div>
+        <div class="box"><b>rotateInPlace()</b><span>gHipSign = HIP_ROT → spin</span></div>
+        <div class="box"><b>sitDown() · frontPawWave()</b><span>pose moves (parked)</span></div>
+        <div class="box"><b>testLeg()</b><span>exercise one leg for tuning</span></div>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- 4 PRIMITIVES -->
+    <div class="col t4">
+      <div class="ch"><span class="num">4</span> GAIT PRIMITIVES</div>
+      <div class="body">
+        <div class="box"><b>walkForwardOneStep()</b><span>trotHalfStep(0) + trotHalfStep(1)</span></div>
+        <div class="box"><b>trotHalfStep(g)</b><span>lift diagonal pair → swing fwd + stroke other back → plant</span></div>
+        <div class="box"><b>standAndSettle()</b><span>sync state to calibrated stand</span></div>
+        <div class="box"><b>moveAllTo()</b><span>static poses (sit / wave)</span></div>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- 5 MOTION CORE -->
+    <div class="col t5">
+      <div class="ch"><span class="num">5</span> MOTION CORE <small>kinematics</small></div>
+      <div class="body">
+        <div class="box"><b>state: gSwing[4], gLift[4], gHipSign</b><span>−1 back · 0 stand · +1 fwd / lift</span></div>
+        <div class="box"><b>hipTarget()</b><span>HIP_STAND + sign·swing·HIP_SWING</span></div>
+        <div class="box"><b>kneeTarget()</b><span>KNEE_STAND + KNEE_UP·lift·KNEE_LIFT</span></div>
+        <div class="box"><b>applyTargets(ms)</b><span>interpolate 8 servos in 15 ms steps</span></div>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <!-- 6 DRIVER -->
+    <div class="col t6">
+      <div class="ch"><span class="num">6</span> SERVO DRIVER → HW</div>
+      <div class="body">
+        <div class="box"><b>set_servo_angle(i, °)</b><span>clamp 0–180°</span></div>
+        <div class="box"><b>angle_to_duty()</b><span>0–180° → 500–2500 µs pulse</span></div>
+        <div class="box"><b>ledc_set_duty + update_duty</b></div>
+        <div class="box"><b>LEDC PWM 50 Hz → 8 servos</b><span>4 legs × (hip + knee)</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="calib">
+    <div class="lab">
+      <b>CALIBRATION &amp; TUNING</b>
+      <span>Per-servo data feeding the Motion Core ▲ — set on hardware</span>
+    </div>
+    <div class="grid">
+      <div class="cell k1"><b>HIP_IDX / KNEE_IDX</b><span>leg → physical servo map</span></div>
+      <div class="cell k2"><b>HIP_STAND / KNEE_STAND</b><span>neutral “stand” angles per servo</span></div>
+      <div class="cell k3"><b>DIAG pairs</b><span>{FL,BR} &amp; {FR,BL} trot diagonals</span></div>
+      <div class="cell k4"><b>HIP_FWD {−1,−1,+1,+1}</b><span>straight: front opposite back</span></div>
+      <div class="cell k5"><b>HIP_ROT {+1,+1,+1,+1}</b><span>spin: all hips same sense</span></div>
+      <div class="cell k6"><b>KNEE_UP</b><span>per-leg lift direction signs</span></div>
+      <div class="cell k1"><b>HIP_SWING 26 · KNEE_LIFT 36</b><span>stride length · foot clearance (°)</span></div>
+      <div class="cell k2"><b>SWING_MS 110 · LIFT_MS 45</b><span>move timing — smaller = faster</span></div>
+      <div class="cell k3"><b>CYCLES_PER_METER 14 · TURN_CYCLES 8</b><span>distance · rotation amount</span></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
